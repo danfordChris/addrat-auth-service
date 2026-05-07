@@ -16,6 +16,14 @@ import com.pesa.common.api.ApiResponses;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 import java.util.Map;
 
 @RestController
@@ -31,19 +39,19 @@ public class OtpController {
     private final UserRepository userRepository;
 
     @PostMapping("/request")
-    public ResponseEntity<?> requestOtp(@RequestBody OtpRequestBody body) {
+    public ResponseEntity<?> requestOtp(@Valid @RequestBody OtpRequestBody body) {
 
         try {
-            log.debug("Starting OTP generation for phone: {}", body.phoneNumber());
+            log.debug("Starting OTP generation for phone: {}", body.getPhoneNumber());
             String otp = otpGenerator.generateOtp();
             log.debug("OTP generated: {}", otp);
 
             // TODO: Add Bulk SMS sending logic here using a service
 
             log.debug("About to store OTP in Redis");
-            otpStoreService.saveOtp(body.phoneNumber(), otp);
+            otpStoreService.saveOtp(body.getPhoneNumber(), otp);
             log.debug("OTP stored successfully in Redis");
-            log.info("OTP for {}: {}", body.phoneNumber(), otp);
+            log.info("OTP for {}: {}", body.getPhoneNumber(), otp);
             return ResponseEntity.ok(ApiResponses.success("OTP sent", Map.of("otp", otp)));
         } catch (Exception e) {
             log.error("Exception in OTP request handler", e);
@@ -54,16 +62,16 @@ public class OtpController {
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<?> verifyOtp(@RequestBody OtpVerifyBody body) {
+    public ResponseEntity<?> verifyOtp(@Valid @RequestBody OtpVerifyBody body) {
 
         OtpVerifyRequest otpVerifyRequest;
 
         try {
 
             otpVerifyRequest = OtpVerifyRequest.builder()
-                    .phoneNumber(body.phoneNumber())
-                    .code(body.otp())
-                    .type(body.type())
+                    .phoneNumber(body.getPhoneNumber())
+                    .code(body.getOtp())
+                    .type(body.getType())
                     .build();
 
             otpStoreService.verifyOtp(
@@ -105,11 +113,29 @@ public class OtpController {
     }
 }
 
-record OtpRequestBody(String phoneNumber) {
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+class OtpRequestBody {
+    @NotBlank(message = "Phone number is required")
+    @Pattern(regexp = "^\\d{9,15}$", message = "Phone number must be 9-15 digits without + symbol")
+    private String phoneNumber;
 }
 
-record OtpVerifyBody(String phoneNumber, String otp, OtpType type) {
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+class OtpVerifyBody {
+    @NotBlank(message = "Phone number is required")
+    @Pattern(regexp = "^\\d{9,15}$", message = "Phone number must be 9-15 digits without + symbol")
+    private String phoneNumber;
 
+    @NotBlank(message = "OTP code is required")
+    @Pattern(regexp = "^\\d{6}$", message = "OTP must be exactly 6 digits")
+    private String otp;
+
+    @NotNull(message = "OTP type is required")
+    private OtpType type;
 }
 
 record AuthResponse(String token, String refreshToken, Map<String, Object> user) {

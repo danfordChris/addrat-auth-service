@@ -40,7 +40,7 @@ public class RedisConfig {
         }
 
         LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
-                .commandTimeout(Duration.ofSeconds(5))
+                .commandTimeout(Duration.ofSeconds(10))
                 .shutdownTimeout(Duration.ofSeconds(2))
                 .clientOptions(ClientOptions.builder()
                         .autoReconnect(true)

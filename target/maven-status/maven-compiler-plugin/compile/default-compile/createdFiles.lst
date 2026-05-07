@@ -4,6 +4,7 @@ com/pesa/controller/KycDecideRequest.class
 com/pesa/common/pagination/PaginationParam.class
 com/pesa/dto/KycResponse$KycResponseBuilder.class
 com/pesa/common/api/ApiResponses.class
+com/pesa/common/config/RedisConfig.class
 com/pesa/repository/UserRepository.class
 com/pesa/common/exception/ForbiddenException.class
 com/pesa/dto/UserProfileResponse.class
@@ -40,6 +41,7 @@ com/pesa/dto/UserProfileResponse$UserProfileResponseBuilder.class
 com/pesa/entity/KycProfile$Gender.class
 com/pesa/entity/AuditLog.class
 com/pesa/common/exception/AppException.class
+com/pesa/common/config/RedisHealthCheck.class
 com/pesa/repository/CreditBoardScoreRepository.class
 com/pesa/security/SecurityConfig.class
 com/pesa/entity/CreditBoardScore$CreditBoardScoreBuilder.class

@@ -1,6 +1,8 @@
 /Users/danfordchris/projects/starterpacks/pesa-lending/backend/auth-service/src/main/java/com/pesa/AuthServiceApplication.java
 /Users/danfordchris/projects/starterpacks/pesa-lending/backend/auth-service/src/main/java/com/pesa/common/api/ApiResponse.java
 /Users/danfordchris/projects/starterpacks/pesa-lending/backend/auth-service/src/main/java/com/pesa/common/api/ApiResponses.java
+/Users/danfordchris/projects/starterpacks/pesa-lending/backend/auth-service/src/main/java/com/pesa/common/config/RedisConfig.java
+/Users/danfordchris/projects/starterpacks/pesa-lending/backend/auth-service/src/main/java/com/pesa/common/config/RedisHealthCheck.java
 /Users/danfordchris/projects/starterpacks/pesa-lending/backend/auth-service/src/main/java/com/pesa/common/config/WebMvcConfig.java
 /Users/danfordchris/projects/starterpacks/pesa-lending/backend/auth-service/src/main/java/com/pesa/common/exception/AppException.java
 /Users/danfordchris/projects/starterpacks/pesa-lending/backend/auth-service/src/main/java/com/pesa/common/exception/BadRequestException.java

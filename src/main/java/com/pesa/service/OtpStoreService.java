@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import jakarta.annotation.PostConstruct;
 import java.time.Duration;
 import java.util.Map;
 import java.util.HashMap;
@@ -17,6 +18,20 @@ import java.util.HashMap;
 @Slf4j
 @RequiredArgsConstructor
 public class OtpStoreService {
+
+    @PostConstruct
+    public void init() {
+        log.info("OtpStoreService initialized, testing Redis connection...");
+        try {
+            String testKey = "test-connection-" + System.currentTimeMillis();
+            redisTemplate.opsForValue().set(testKey, "test", Duration.ofSeconds(1));
+            redisTemplate.delete(testKey);
+            log.info("✓ Redis connection test successful");
+        } catch (Exception e) {
+            log.error("✗ Redis connection test failed", e);
+            throw new RuntimeException("Redis not available at startup", e);
+        }
+    }
 
     private static final String KEY_PREFIX = "otp:";
     private static final String FIELD_CODE = "code";

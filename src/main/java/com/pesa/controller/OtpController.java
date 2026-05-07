@@ -118,7 +118,7 @@ public class OtpController {
 @AllArgsConstructor
 class OtpRequestBody {
     @NotBlank(message = "Phone number is required")
-    @Pattern(regexp = "^\\d{9,15}$", message = "Phone number must be 9-15 digits without + symbol")
+    @Pattern(regexp = "^\\d{10,12}$", message = "Phone number must be 10-12 digits (Tanzania format: 255XXXXXXXXX or 0XXXXXXXXX)")
     private String phoneNumber;
 }
 
@@ -127,7 +127,7 @@ class OtpRequestBody {
 @AllArgsConstructor
 class OtpVerifyBody {
     @NotBlank(message = "Phone number is required")
-    @Pattern(regexp = "^\\d{9,15}$", message = "Phone number must be 9-15 digits without + symbol")
+    @Pattern(regexp = "^\\d{10,12}$", message = "Phone number must be 10-12 digits (Tanzania format: 255XXXXXXXXX or 0XXXXXXXXX)")
     private String phoneNumber;
 
     @NotBlank(message = "OTP code is required")

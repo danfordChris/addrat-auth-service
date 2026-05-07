@@ -15,7 +15,7 @@ import lombok.Builder.Default;
 public class OtpVerifyRequest {
 
     @NotBlank(message = "Phone number is required")
-    @Pattern(regexp = "^\\+255\\d{9}$", message = "Phone number must be in format +255XXXXXXXXX")
+    @Pattern(regexp = "^\\255\\d{9}$", message = "Phone number must be in format +255XXXXXXXXX")
     private String phoneNumber;
 
     @NotBlank(message = "OTP code is required")

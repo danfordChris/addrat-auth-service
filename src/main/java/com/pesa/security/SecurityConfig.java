@@ -31,6 +31,7 @@ public class SecurityConfig {
                         .requestMatchers("/admin/*").permitAll()
                         .requestMatchers("/otp/*", "/otp/verify").permitAll()
                         .requestMatchers("/refresh", "/token/refresh").permitAll()
+
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

@@ -30,26 +30,30 @@ public class OtpController {
     private final OtpStoreService otpStoreService;
     private final UserRepository userRepository;
 
-    @PostMapping("/otp/request")
+    @PostMapping("/request")
     public ResponseEntity<?> requestOtp(@RequestBody OtpRequestBody body) {
 
         try {
+            log.debug("Starting OTP generation for phone: {}", body.phoneNumber());
             String otp = otpGenerator.generateOtp();
+            log.debug("OTP generated: {}", otp);
 
             // TODO: Add Bulk SMS sending logic here using a service
 
+            log.debug("About to store OTP in Redis");
             otpStoreService.saveOtp(body.phoneNumber(), otp);
+            log.debug("OTP stored successfully in Redis");
             log.info("OTP for {}: {}", body.phoneNumber(), otp);
             return ResponseEntity.ok(ApiResponses.success("OTP sent", Map.of("otp", otp)));
         } catch (Exception e) {
-            log.error("Error requesting OTP: {}", e.getMessage());
+            log.error("Exception in OTP request handler", e);
             return ResponseEntity.badRequest()
                     .body(ApiResponses.error("Failed to request OTP: " + e.getMessage()));
         }
 
     }
 
-    @PostMapping("/otp/verify")
+    @PostMapping("/verify")
     public ResponseEntity<?> verifyOtp(@RequestBody OtpVerifyBody body) {
 
         OtpVerifyRequest otpVerifyRequest;

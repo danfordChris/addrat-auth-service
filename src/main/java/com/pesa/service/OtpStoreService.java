@@ -4,6 +4,7 @@ import com.pesa.common.exception.BadRequestException;
 import com.pesa.common.exception.NotFoundException;
 import com.pesa.common.exception.UnauthorizedException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class OtpStoreService {
 
@@ -28,13 +30,23 @@ public class OtpStoreService {
     private long otpTtlMinutes;
 
     public void saveOtp(String phoneNumber, String code) {
-        String key = key(phoneNumber);
-        Map<Object, Object> values = new HashMap<>();
-        values.put(FIELD_CODE, code);
-        values.put(FIELD_ATTEMPTS, "0");
-        values.put(FIELD_USED, "false");
-        redisTemplate.opsForHash().putAll(key, values);
-        redisTemplate.expire(key, Duration.ofMinutes(otpTtlMinutes));
+        try {
+            log.debug("Saving OTP for phone: {}", phoneNumber);
+            String key = key(phoneNumber);
+            Map<Object, Object> values = new HashMap<>();
+            values.put(FIELD_CODE, code);
+            values.put(FIELD_ATTEMPTS, "0");
+            values.put(FIELD_USED, "false");
+            log.debug("About to call redisTemplate.opsForHash().putAll()");
+            redisTemplate.opsForHash().putAll(key, values);
+            log.debug("RedisTemplate putAll() successful");
+            redisTemplate.expire(key, Duration.ofMinutes(otpTtlMinutes));
+            log.debug("OTP saved successfully in Redis");
+        } catch (Exception e) {
+            log.error("Redis Connection Exception in saveOtp", e);
+            log.error("Exception Type: {}, Message: {}", e.getClass().getName(), e.getMessage());
+            throw new RuntimeException("Unable to connect to Redis: " + e.getMessage(), e);
+        }
     }
 
     public void verifyOtp(String phoneNumber, String code) {

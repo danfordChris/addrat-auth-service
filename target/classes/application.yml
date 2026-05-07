@@ -22,6 +22,19 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
 
+  redis:
+    host: ${spring.redis.host:${SPRING_REDIS_HOST:localhost}}
+    port: ${spring.redis.port:${SPRING_REDIS_PORT:6379}}
+    password: ${spring.redis.password:${SPRING_REDIS_PASSWORD:}}
+    timeout: 5000ms
+    connect-timeout: 5000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: -1ms
+
 server:
   port: 8081
   servlet:
@@ -31,6 +44,7 @@ logging:
   level:
     root: INFO
     com.pesa: DEBUG
+    org.springframework.data.redis: DEBUG
   pattern:
     console: "[%d{yyyy-MM-dd HH:mm:ss}] [%thread] %-5level %logger{36} - %msg%n"
 
@@ -55,3 +69,6 @@ file-storage:
   type: ${FILE_STORAGE_TYPE:local}
   local-path: /tmp/pesa-documents
   s3-bucket: ${AWS_S3_BUCKET:}
+
+otp:
+  ttl-minutes: ${OTP_TTL_MINUTES:10}

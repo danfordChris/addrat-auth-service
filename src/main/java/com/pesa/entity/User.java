@@ -23,7 +23,7 @@ public class User {
     @Column(unique = true, nullable = false)
     private String phoneNumber;
 
-    @Column
+    @Column(nullable = true)
     private String password;
 
     private String fullName;
@@ -39,6 +39,12 @@ public class User {
     private LocalDateTime updatedAt;
 
     private LocalDateTime lastLogin;
+
+    @Column
+    private String pin;
+
+    @Column
+    private String deviceToken;
 
     @PrePersist
     protected void onCreate() {

@@ -15,6 +15,7 @@ com/pesa/controller/ReferenceController$BankBranchDto$BankBranchDtoBuilder.class
 com/pesa/repository/KycProfileRepository.class
 com/pesa/entity/KycProfile$IdType.class
 com/pesa/common/pagination/PaginationArgumentResolver.class
+com/pesa/controller/UserProfileController.class
 com/pesa/controller/ReferenceController.class
 com/pesa/common/exception/ConflictException.class
 com/pesa/entity/KycProfile$IncomeSource.class

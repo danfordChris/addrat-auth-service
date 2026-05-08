@@ -19,6 +19,7 @@
 /Users/danfordchris/projects/starterpacks/pesa-lending/backend/auth-service/src/main/java/com/pesa/controller/OtpController.java
 /Users/danfordchris/projects/starterpacks/pesa-lending/backend/auth-service/src/main/java/com/pesa/controller/ReferenceController.java
 /Users/danfordchris/projects/starterpacks/pesa-lending/backend/auth-service/src/main/java/com/pesa/controller/TokenController.java
+/Users/danfordchris/projects/starterpacks/pesa-lending/backend/auth-service/src/main/java/com/pesa/controller/UserProfileController.java
 /Users/danfordchris/projects/starterpacks/pesa-lending/backend/auth-service/src/main/java/com/pesa/dto/AuthRequest.java
 /Users/danfordchris/projects/starterpacks/pesa-lending/backend/auth-service/src/main/java/com/pesa/dto/AuthResponse.java
 /Users/danfordchris/projects/starterpacks/pesa-lending/backend/auth-service/src/main/java/com/pesa/dto/EmploymentInfoRequest.java

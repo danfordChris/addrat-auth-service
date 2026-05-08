@@ -36,7 +36,7 @@ public class GlobalExceptionHandler {
             ));
 
         log.warn("Validation failed: {}", errors);
-        return ResponseEntity.badRequest().body(ApiResponses.error("Validation failed", errors));
+        return ResponseEntity.badRequest().body(ApiResponses.error("Validation failed: " + errors, "Validation failed"));
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
@@ -60,27 +60,28 @@ public class GlobalExceptionHandler {
         } else {
             log.warn("Application exception: {}", ex.getMessage());
         }
-        return ResponseEntity.status(ex.getStatus()).body(ApiResponses.error(ex.getMessage()));
+        return ResponseEntity.status(ex.getStatus().value()).body(ApiResponses.error(ex.getMessage()));
     }
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ApiResponse<Object>> handleAuthentication(AuthenticationException ex) {
         log.warn("Unauthorized: {}", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponses.error("Unauthorized"));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponses.error("Unauthorized", "Unauthorized"));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiResponse<Object>> handleAccessDenied(AccessDeniedException ex) {
         log.warn("Forbidden: {}", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponses.error("Forbidden"));
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponses.error("Forbidden", "Forbidden"));
     }
 
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ApiResponse<Object>> handleResponseStatus(ResponseStatusException ex) {
         HttpStatus status = HttpStatus.valueOf(ex.getStatusCode().value());
-        String message = ex.getReason() == null || ex.getReason().isBlank()
+        String reason = ex.getReason();
+        String message = reason == null || reason.isBlank()
             ? status.getReasonPhrase()
-            : ex.getReason();
+            : reason;
         log.warn("Response status exception [{}]: {}", status.value(), message);
         return ResponseEntity.status(status).body(ApiResponses.error(message));
     }
@@ -91,7 +92,7 @@ public class GlobalExceptionHandler {
         log.warn("No handler found: {} {}", ex.getHttpMethod(), ex.getRequestURL());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
             .header(HttpHeaders.CONTENT_TYPE, "application/json")
-            .body(ApiResponses.error(message));
+            .body(ApiResponses.error(message, message));
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
@@ -120,13 +121,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Object>> handleRuntime(RuntimeException ex) {
         log.error("Unhandled runtime exception", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(ApiResponses.error("Internal server error"));
+            .body(ApiResponses.error("Internal server error", "Internal server error"));
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleUnhandled(Exception ex) {
         log.error("Unhandled server exception", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(ApiResponses.error("Internal server error"));
+            .body(ApiResponses.error("Internal server error", "Internal server error"));
     }
 }

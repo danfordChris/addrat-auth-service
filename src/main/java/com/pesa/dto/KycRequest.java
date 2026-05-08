@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
 
+import com.pesa.entity.KycProfile.KycStep;
+
 public class KycRequest {
 
     @NotBlank(message = "Full name is required")
@@ -32,12 +34,14 @@ public class KycRequest {
 
     private Integer numberOfDependents;
 
-    private Integer step;
+    private KycStep step;
 
-    public KycRequest() {}
+    public KycRequest() {
+    }
 
     public KycRequest(String fullName, LocalDate dateOfBirth, String gender, String idType, String idNumber,
-                      String residenceAddress, String businessDetails, String maritalStatus, Integer numberOfDependents, Integer step) {
+            String residenceAddress, String businessDetails, String maritalStatus, Integer numberOfDependents,
+            KycStep step) {
         this.fullName = fullName;
         this.dateOfBirth = dateOfBirth;
         this.gender = gender;
@@ -122,11 +126,11 @@ public class KycRequest {
         this.numberOfDependents = numberOfDependents;
     }
 
-    public Integer getStep() {
+    public KycStep getStep() {
         return step;
     }
 
-    public void setStep(Integer step) {
+    public void setStep(KycStep step) {
         this.step = step;
     }
 }

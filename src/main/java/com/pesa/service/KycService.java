@@ -1,7 +1,9 @@
 package com.pesa.service;
 
+import com.pesa.common.exception.BadRequestException;
 import com.pesa.dto.KycRequest;
 import com.pesa.entity.KycProfile;
+import com.pesa.entity.KycProfile.KycStep;
 import com.pesa.entity.KycDocument;
 import com.pesa.repository.KycProfileRepository;
 import com.pesa.repository.KycDocumentRepository;
@@ -33,28 +35,38 @@ public class KycService {
 
     public KycProfile getKycProfile(Long userId) {
         return kycProfileRepository.findByUserId(userId)
-            .orElseThrow(() -> new RuntimeException("KYC profile not found"));
+                .orElseThrow(() -> new BadRequestException("KYC profile not found"));
     }
 
     @Transactional
     public KycProfile saveKycStep(Long userId, KycRequest request) {
         KycProfile profile = getKycProfile(userId);
 
-        if (request.getFullName() != null) profile.setFullName(request.getFullName());
-        if (request.getDateOfBirth() != null) profile.setDateOfBirth(request.getDateOfBirth());
+        if (request.getFullName() != null)
+            profile.setFullName(request.getFullName());
+        if (request.getDateOfBirth() != null)
+            profile.setDateOfBirth(request.getDateOfBirth());
 
         if (request.getGender() != null) {
             try {
                 profile.setGender(KycProfile.Gender.valueOf(request.getGender().toUpperCase()));
-            } catch (IllegalArgumentException e) {
+            } catch (BadRequestException e) {
                 log.warn("Invalid gender value: {}", request.getGender());
+                throw e;
             }
         }
 
-        if (request.getIdType() != null) profile.setIdType(request.getIdType());
-        if (request.getIdNumber() != null) profile.setIdNumber(request.getIdNumber());
-        if (request.getResidenceAddress() != null) profile.setResidenceAddress(request.getResidenceAddress());
-        if (request.getBusinessDetails() != null) profile.setBusinessDetails(request.getBusinessDetails());
+        if (request.getIdType() != null)
+
+            profile.setIdType(KycProfile.IdType
+                    .valueOf(request.getIdType().toUpperCase()));
+
+        if (request.getIdNumber() != null)
+            profile.setIdNumber(request.getIdNumber());
+        if (request.getResidenceAddress() != null)
+            profile.setResidenceAddress(request.getResidenceAddress());
+        if (request.getBusinessDetails() != null)
+            profile.setBusinessDetails(request.getBusinessDetails());
 
         if (request.getMaritalStatus() != null) {
             try {
@@ -64,12 +76,13 @@ public class KycService {
             }
         }
 
-        if (request.getNumberOfDependents() != null) profile.setNumberOfDependents(request.getNumberOfDependents());
+        if (request.getNumberOfDependents() != null)
+            profile.setNumberOfDependents(request.getNumberOfDependents());
 
-        Integer step = request.getStep() != null ? request.getStep() : 0;
+        KycStep step = request.getStep() != null ? request.getStep() : KycStep.PERSONAL_INFO;
         profile.setCompletionStep(step);
 
-        if (step >= 5) {
+        if (step == KycStep.APPROVED) {
             profile.setStatus(KycProfile.KycStatus.APPROVED);
             profile.setApprovedAt(java.time.LocalDateTime.now());
         }
@@ -92,13 +105,13 @@ public class KycService {
             Files.write(filePath, file.getBytes());
 
             KycDocument document = KycDocument.builder()
-                .kycProfileId(kycProfileId)
-                .documentType(documentType)
-                .fileName(fileName)
-                .fileUrl("/documents/" + fileName)
-                .fileSizeBytes(file.getSize())
-                .mimeType(file.getContentType())
-                .build();
+                    .kycProfileId(kycProfileId)
+                    .documentType(documentType)
+                    .fileName(fileName)
+                    .fileUrl("/documents/" + fileName)
+                    .fileSizeBytes(file.getSize())
+                    .mimeType(file.getContentType())
+                    .build();
 
             return kycDocumentRepository.save(document);
         } catch (IOException e) {
@@ -114,6 +127,6 @@ public class KycService {
     public boolean isKycComplete(Long userId) {
         KycProfile profile = getKycProfile(userId);
         return profile.getStatus() == KycProfile.KycStatus.APPROVED &&
-               profile.getCompletionStep() >= 5;
+                profile.getCompletionStep() == KycProfile.KycStep.APPROVED;
     }
 }

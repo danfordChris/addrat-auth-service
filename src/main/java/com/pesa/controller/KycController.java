@@ -1,9 +1,11 @@
 package com.pesa.controller;
 
-import com.pesa.dto.ApiResponse;
+import com.pesa.common.api.ApiResponse;
+import com.pesa.common.api.ApiResponses;
 import com.pesa.dto.KycRequest;
 import com.pesa.dto.KycResponse;
 import com.pesa.entity.KycProfile;
+import com.pesa.entity.KycProfile.KycStep;
 import com.pesa.entity.KycDocument;
 import com.pesa.service.KycService;
 import jakarta.validation.Valid;
@@ -26,39 +28,40 @@ public class KycController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<KycResponse>> getKycProfile(Authentication authentication) {
+    public ResponseEntity<ApiResponse<?>> getKycProfile(Authentication authentication) {
         try {
             Long userId = (Long) authentication.getDetails();
             KycProfile profile = kycService.getKycProfile(userId);
             KycResponse response = mapToKycResponse(profile);
-            return ResponseEntity.ok(new ApiResponse<>(true, "KYC profile retrieved", response));
+            return ResponseEntity.ok(ApiResponses.success("KYC profile retrieved", response));
         } catch (RuntimeException e) {
             log.error("Error retrieving KYC profile: {}", e.getMessage());
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(false, e.getMessage(), null));
+                    .body(ApiResponses.error(e.getMessage()));
         }
     }
 
     @PostMapping("/step/{step}")
-    public ResponseEntity<ApiResponse<KycResponse>> saveKycStep(
+    public ResponseEntity<ApiResponse<?>> saveKycStep(
             @PathVariable Integer step,
             @Valid @RequestBody KycRequest request,
             Authentication authentication) {
         try {
             Long userId = (Long) authentication.getDetails();
-            request.setStep(step);
+            
+            request.setStep(KycStep.fromInteger(step));
             KycProfile profile = kycService.saveKycStep(userId, request);
             KycResponse response = mapToKycResponse(profile);
-            return ResponseEntity.ok(new ApiResponse<>(true, "KYC step saved", response));
+                return ResponseEntity.ok(ApiResponses.success("KYC step saved", response));
         } catch (RuntimeException e) {
             log.error("Error saving KYC step {}: {}", step, e.getMessage());
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(false, e.getMessage(), null));
+                    .body(ApiResponses.error(e.getMessage()));
         }
     }
 
     @PostMapping("/documents/{documentType}")
-    public ResponseEntity<ApiResponse<?>> uploadDocument(
+            public ResponseEntity<ApiResponse<?>> uploadDocument(
             @PathVariable String documentType,
             @RequestParam("file") MultipartFile file,
             Authentication authentication) {
@@ -69,11 +72,11 @@ public class KycController {
             KycDocument.DocumentType docType = KycDocument.DocumentType.valueOf(documentType.toUpperCase());
             KycDocument document = kycService.uploadDocument(profile.getId(), docType, file);
 
-            return ResponseEntity.ok(new ApiResponse<>(true, "Document uploaded", document));
+            return ResponseEntity.ok(ApiResponses.success("Document uploaded", document));
         } catch (RuntimeException e) {
             log.error("Error uploading document: {}", e.getMessage());
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(false, e.getMessage(), null));
+                    .body(ApiResponses.error(e.getMessage()));
         }
     }
 
@@ -83,24 +86,24 @@ public class KycController {
             Long userId = (Long) authentication.getDetails();
             KycProfile profile = kycService.getKycProfile(userId);
             var documents = kycService.getDocuments(profile.getId());
-            return ResponseEntity.ok(new ApiResponse<>(true, "Documents retrieved", documents));
+            return ResponseEntity.ok(ApiResponses.success("Documents retrieved", documents));
         } catch (RuntimeException e) {
             log.error("Error retrieving documents: {}", e.getMessage());
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(false, e.getMessage(), null));
+                    .body(ApiResponses.error(e.getMessage()));
         }
     }
 
     @GetMapping("/status")
-    public ResponseEntity<ApiResponse<Boolean>> getKycStatus(Authentication authentication) {
+    public ResponseEntity<ApiResponse<?>> getKycStatus(Authentication authentication) {
         try {
             Long userId = (Long) authentication.getDetails();
             boolean isComplete = kycService.isKycComplete(userId);
-            return ResponseEntity.ok(new ApiResponse<>(true, "KYC status", isComplete));
+            return ResponseEntity.ok(ApiResponses.success("KYC status", isComplete));
         } catch (RuntimeException e) {
             log.error("Error retrieving KYC status: {}", e.getMessage());
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(false, e.getMessage(), null));
+                    .body(ApiResponses.error(e.getMessage()));
         }
     }
 
@@ -114,7 +117,7 @@ public class KycController {
                 .fullName(profile.getFullName())
                 .dateOfBirth(profile.getDateOfBirth())
                 .gender(profile.getGender() != null ? profile.getGender().name() : null)
-                .idType(profile.getIdType())
+                .idType(profile.getIdType() != null ? profile.getIdType().name() : null)
                 .idNumber(profile.getIdNumber())
                 .residenceAddress(profile.getResidenceAddress())
                 .businessDetails(profile.getBusinessDetails())

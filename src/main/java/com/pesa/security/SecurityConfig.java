@@ -29,6 +29,7 @@ public class SecurityConfig {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/admin/*").permitAll()
+                        .requestMatchers("/kyc/*").permitAll()
                         .requestMatchers("/otp/*", "/otp/verify").permitAll()
                         .requestMatchers("/refresh", "/token/refresh").permitAll()
 

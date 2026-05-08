@@ -9,8 +9,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AuthResponse {
-    private String accessToken;
-    private String refreshToken;
-    private UserDto user;
+public class FinancialDetailsRequest {
+    private int bankId;
+    private int branchId;
+    private String accountNumber;
+    private String sourceOfIncome;
+    private String incomeRange;
 }

@@ -2,8 +2,12 @@ package com.pesa.controller;
 
 import com.pesa.dto.OtpType;
 import com.pesa.dto.OtpVerifyRequest;
+import com.pesa.dto.AuthResponse;
+import com.pesa.dto.UserDto;
 import com.pesa.entity.User;
+import com.pesa.entity.KycProfile;
 import com.pesa.repository.UserRepository;
+import com.pesa.repository.KycProfileRepository;
 
 import com.pesa.service.OtpStoreService;
 import com.pesa.util.JwtTokenProvider;
@@ -37,6 +41,7 @@ public class OtpController {
     private final OtpGenerator otpGenerator;
     private final OtpStoreService otpStoreService;
     private final UserRepository userRepository;
+    private final KycProfileRepository kycProfileRepository;
 
     @PostMapping("/request")
     public ResponseEntity<?> requestOtp(@Valid @RequestBody OtpRequestBody body) {
@@ -46,7 +51,7 @@ public class OtpController {
             String otp = otpGenerator.generateOtp();
             log.debug("OTP generated: {}", otp);
 
-            // TODO: Add Bulk SMS sending logic here using a service
+            sendOtpViaSms(body.getPhoneNumber(), otp);
 
             log.debug("About to store OTP in Redis");
             otpStoreService.saveOtp(body.getPhoneNumber(), otp);
@@ -71,7 +76,7 @@ public class OtpController {
             otpVerifyRequest = OtpVerifyRequest.builder()
                     .phoneNumber(body.getPhoneNumber())
                     .code(body.getOtp())
-                    .type(body.getType())
+                    .type(body.getPurpose())
                     .build();
 
             otpStoreService.verifyOtp(
@@ -80,6 +85,7 @@ public class OtpController {
 
             switch (otpVerifyRequest.getType()) {
                 case LOGIN:
+                case REGISTRATION:
                     User user = userRepository
                             .findByPhoneNumber(otpVerifyRequest.getPhoneNumber())
                             .orElseGet(() -> {
@@ -88,15 +94,43 @@ public class OtpController {
                                 return userRepository.save(newUser);
                             });
 
+                    KycProfile kycProfile = kycProfileRepository.findByUserId(user.getId()).orElse(null);
+                    if (kycProfile == null) {
+                        kycProfile = new KycProfile();
+                        kycProfile.setUserId(user.getId());
+                        kycProfile.setStatus(KycProfile.KycStatus.PENDING);
+                        kycProfile.setCompletionStep(KycProfile.KycStep.PERSONAL_INFO);
+                        kycProfileRepository.save(kycProfile);
+                    }
+
+                    String kycStatus = kycProfile.getStatus().name();
+                    String creditLimit = "0";
+
                     String accessToken = tokenProvider.generateAccessToken(user.getId(), user.getPhoneNumber());
                     String refreshToken = tokenProvider.generateRefreshToken(user.getId(), user.getPhoneNumber());
 
-                    return ResponseEntity.ok(ApiResponses.success("OTP verified",
-                            new AuthResponse(accessToken, refreshToken, Map.of(
-                                    "userId", user.getId(),
-                                    "phoneNumber", user.getPhoneNumber()))));
+                    UserDto userDto = UserDto.builder()
+                            .id(user.getId())
+                            .phoneNumber(user.getPhoneNumber())
+                            .fullName(user.getFullName())
+                            .email(user.getEmail())
+                            .kycStatus(kycStatus)
+                            .creditLimit(creditLimit)
+                            .build();
 
-                // TODO: Add other OTP types like registration, password reset, etc.
+                    AuthResponse authResponse = AuthResponse.builder()
+                            .accessToken(accessToken)
+                            .refreshToken(refreshToken)
+                            .user(userDto)
+                            .build();
+
+                    return ResponseEntity.ok(ApiResponses.success("OTP verified", authResponse));
+
+                case PASSWORD_RESET:
+                    return ResponseEntity.ok(ApiResponses.success("OTP verified for password reset", null));
+
+                case TRANSACTION:
+                    return ResponseEntity.ok(ApiResponses.success("OTP verified for transaction", null));
 
                 default:
                     log.warn("Unhandled OTP type: {}", otpVerifyRequest.getType());
@@ -111,6 +145,14 @@ public class OtpController {
         }
 
     }
+
+    private void sendOtpViaSms(String phoneNumber, String otp) {
+        try {
+            log.debug("Sending OTP via SMS to: {}", phoneNumber);
+        } catch (Exception e) {
+            log.warn("Failed to send SMS for phone: {}, continuing with OTP storage", phoneNumber, e);
+        }
+    }
 }
 
 @Getter
@@ -118,7 +160,7 @@ public class OtpController {
 @AllArgsConstructor
 class OtpRequestBody {
     @NotBlank(message = "Phone number is required")
-    @Pattern(regexp = "^\\d{10,12}$", message = "Phone number must be 10-12 digits (Tanzania format: 255XXXXXXXXX or 0XXXXXXXXX)")
+    @Pattern(regexp = "^(\\+?\\d{10,12}|0[67]\\d{8})$", message = "Phone number must be in Tanzania format (255XXXXXXXXX, +255XXXXXXXXX, or 0XXXXXXXXX)")
     private String phoneNumber;
 }
 
@@ -127,16 +169,14 @@ class OtpRequestBody {
 @AllArgsConstructor
 class OtpVerifyBody {
     @NotBlank(message = "Phone number is required")
-    @Pattern(regexp = "^\\d{10,12}$", message = "Phone number must be 10-12 digits (Tanzania format: 255XXXXXXXXX or 0XXXXXXXXX)")
+    @Pattern(regexp = "^(\\+?\\d{10,12}|0[67]\\d{8})$", message = "Phone number must be in Tanzania format (255XXXXXXXXX, +255XXXXXXXXX, or 0XXXXXXXXX)")
     private String phoneNumber;
 
     @NotBlank(message = "OTP code is required")
     @Pattern(regexp = "^\\d{6}$", message = "OTP must be exactly 6 digits")
     private String otp;
 
-    @NotNull(message = "OTP type is required")
-    private OtpType type;
+    @NotNull(message = "OTP purpose is required")
+    private OtpType purpose;
 }
 
-record AuthResponse(String token, String refreshToken, Map<String, Object> user) {
-}

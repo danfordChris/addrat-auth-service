@@ -1,9 +1,10 @@
 package com.pesa.dto;
 
 public enum OtpType {
-
-    LOGIN("login", 1),
-    TRANSACTION("transaction", 2);
+    REGISTRATION("REGISTRATION", 1),
+    LOGIN("LOGIN", 2),
+    TRANSACTION("TRANSACTION", 3),
+    PASSWORD_RESET("PASSWORD_RESET", 4);
 
     private final String value;
     private final int code;

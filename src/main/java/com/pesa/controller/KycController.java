@@ -4,6 +4,10 @@ import com.pesa.common.api.ApiResponse;
 import com.pesa.common.api.ApiResponses;
 import com.pesa.dto.KycRequest;
 import com.pesa.dto.KycResponse;
+import com.pesa.dto.PersonalInfoRequest;
+import com.pesa.dto.EmploymentInfoRequest;
+import com.pesa.dto.FinancialDetailsRequest;
+import com.pesa.dto.KycStatusRequest;
 import com.pesa.entity.KycProfile;
 import com.pesa.entity.KycProfile.KycStep;
 import com.pesa.entity.KycDocument;
@@ -15,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import java.util.Arrays;
 
 @RestController
 @RequestMapping("/kyc")
@@ -98,10 +103,111 @@ public class KycController {
     public ResponseEntity<ApiResponse<?>> getKycStatus(Authentication authentication) {
         try {
             Long userId = (Long) authentication.getDetails();
-            boolean isComplete = kycService.isKycComplete(userId);
-            return ResponseEntity.ok(ApiResponses.success("KYC status", isComplete));
+            KycProfile profile = kycService.getKycProfile(userId);
+            KycStatusRequest statusResponse = KycStatusRequest.builder()
+                    .status(profile.getStatus().name())
+                    .completedSteps(Arrays.asList(profile.getCompletionStep().getStepNumber()))
+                    .build();
+            return ResponseEntity.ok(ApiResponses.success("KYC status", statusResponse));
         } catch (RuntimeException e) {
             log.error("Error retrieving KYC status: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(ApiResponses.error(e.getMessage()));
+        }
+    }
+
+    @PostMapping("/personal-info")
+    public ResponseEntity<ApiResponse<?>> savePersonalInfo(
+            @Valid @RequestBody PersonalInfoRequest request,
+            Authentication authentication) {
+        try {
+            Long userId = (Long) authentication.getDetails();
+            KycProfile profile = kycService.getKycProfile(userId);
+
+            profile.setFullName(request.getFirstName() + " " + (request.getMiddleName() != null ? request.getMiddleName() + " " : "") + request.getLastName());
+            profile.setGender(KycProfile.Gender.valueOf(request.getGender().toUpperCase()));
+            profile.setDateOfBirth(java.time.LocalDate.parse(request.getDateOfBirth()));
+            profile.setMaritalStatus(KycProfile.MaritalStatus.valueOf(request.getMaritalStatus().toUpperCase()));
+            profile.setIdNumber(request.getNidaNumber());
+            profile.setResidenceAddress(request.getPhysicalAddress());
+            profile.setCompletionStep(KycProfile.KycStep.PERSONAL_INFO);
+
+            kycService.saveKycProfile(profile);
+            KycResponse response = mapToKycResponse(profile);
+            return ResponseEntity.ok(ApiResponses.success("Personal info saved", response));
+        } catch (Exception e) {
+            log.error("Error saving personal info: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(ApiResponses.error(e.getMessage()));
+        }
+    }
+
+    @PostMapping("/employment-info")
+    public ResponseEntity<ApiResponse<?>> saveEmploymentInfo(
+            @Valid @RequestBody EmploymentInfoRequest request,
+            Authentication authentication) {
+        try {
+            Long userId = (Long) authentication.getDetails();
+            KycProfile profile = kycService.getKycProfile(userId);
+
+            profile.setEmploymentStatus(KycProfile.EmploymentStatus.valueOf(request.getEmploymentStatus().toUpperCase()));
+            profile.setEmployerName(request.getEmployerName());
+            profile.setEmployerAddress(request.getEmployerAddress());
+            profile.setTinNumber(request.getTinNumber());
+            profile.setBusinessName(request.getBusinessName());
+            profile.setBusinessTinNumber(request.getBusinessTinNumber());
+            profile.setBusinessRegistrationNumber(request.getBusinessRegistrationNumber());
+            profile.setNumberOfDependents(request.getNumberOfDependants());
+            profile.setCompletionStep(KycProfile.KycStep.EMPLOYMENT_INFO);
+
+            kycService.saveKycProfile(profile);
+            KycResponse response = mapToKycResponse(profile);
+            return ResponseEntity.ok(ApiResponses.success("Employment info saved", response));
+        } catch (Exception e) {
+            log.error("Error saving employment info: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(ApiResponses.error(e.getMessage()));
+        }
+    }
+
+    @PostMapping("/financial-details")
+    public ResponseEntity<ApiResponse<?>> saveFinancialDetails(
+            @Valid @RequestBody FinancialDetailsRequest request,
+            Authentication authentication) {
+        try {
+            Long userId = (Long) authentication.getDetails();
+            KycProfile profile = kycService.getKycProfile(userId);
+
+            profile.setIncomeSource(KycProfile.IncomeSource.valueOf(request.getSourceOfIncome().toUpperCase()));
+            profile.setIncomeRange(request.getIncomeRange());
+            profile.setCompletionStep(KycProfile.KycStep.FINANCIAL_INFO);
+
+            kycService.saveKycProfile(profile);
+            KycResponse response = mapToKycResponse(profile);
+            return ResponseEntity.ok(ApiResponses.success("Financial details saved", response));
+        } catch (Exception e) {
+            log.error("Error saving financial details: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(ApiResponses.error(e.getMessage()));
+        }
+    }
+
+    @PostMapping("/submit")
+    public ResponseEntity<ApiResponse<?>> submitKyc(Authentication authentication) {
+        try {
+            Long userId = (Long) authentication.getDetails();
+            KycProfile profile = kycService.getKycProfile(userId);
+            profile.setStatus(KycProfile.KycStatus.PENDING);
+            profile.setCompletionStep(KycProfile.KycStep.APPROVED);
+            kycService.saveKycProfile(profile);
+
+            KycStatusRequest statusResponse = KycStatusRequest.builder()
+                    .status(profile.getStatus().name())
+                    .completedSteps(Arrays.asList(profile.getCompletionStep().getStepNumber()))
+                    .build();
+            return ResponseEntity.ok(ApiResponses.success("KYC submitted", statusResponse));
+        } catch (Exception e) {
+            log.error("Error submitting KYC: {}", e.getMessage());
             return ResponseEntity.badRequest()
                     .body(ApiResponses.error(e.getMessage()));
         }

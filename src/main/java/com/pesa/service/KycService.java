@@ -39,6 +39,11 @@ public class KycService {
     }
 
     @Transactional
+    public KycProfile saveKycProfile(KycProfile profile) {
+        return kycProfileRepository.save(profile);
+    }
+
+    @Transactional
     public KycProfile saveKycStep(Long userId, KycRequest request) {
         KycProfile profile = getKycProfile(userId);
         KycStep step = request.getStep() != null ? request.getStep() : KycStep.PERSONAL_INFO;

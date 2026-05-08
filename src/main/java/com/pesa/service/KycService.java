@@ -41,45 +41,11 @@ public class KycService {
     @Transactional
     public KycProfile saveKycStep(Long userId, KycRequest request) {
         KycProfile profile = getKycProfile(userId);
-
-        if (request.getFullName() != null)
-            profile.setFullName(request.getFullName());
-        if (request.getDateOfBirth() != null)
-            profile.setDateOfBirth(request.getDateOfBirth());
-
-        if (request.getGender() != null) {
-            try {
-                profile.setGender(KycProfile.Gender.valueOf(request.getGender().toUpperCase()));
-            } catch (BadRequestException e) {
-                log.warn("Invalid gender value: {}", request.getGender());
-                throw e;
-            }
-        }
-
-        if (request.getIdType() != null)
-
-            profile.setIdType(KycProfile.IdType
-                    .valueOf(request.getIdType().toUpperCase()));
-
-        if (request.getIdNumber() != null)
-            profile.setIdNumber(request.getIdNumber());
-        if (request.getResidenceAddress() != null)
-            profile.setResidenceAddress(request.getResidenceAddress());
-        if (request.getBusinessDetails() != null)
-            profile.setBusinessDetails(request.getBusinessDetails());
-
-        if (request.getMaritalStatus() != null) {
-            try {
-                profile.setMaritalStatus(KycProfile.MaritalStatus.valueOf(request.getMaritalStatus().toUpperCase()));
-            } catch (IllegalArgumentException e) {
-                log.warn("Invalid marital status value: {}", request.getMaritalStatus());
-            }
-        }
-
-        if (request.getNumberOfDependents() != null)
-            profile.setNumberOfDependents(request.getNumberOfDependents());
-
         KycStep step = request.getStep() != null ? request.getStep() : KycStep.PERSONAL_INFO;
+
+        applyPersonalInfo(profile, request);
+        applyEmploymentInfo(profile, request);
+        applyFinancialInfo(profile, request);
         profile.setCompletionStep(step);
 
         if (step == KycStep.APPROVED) {
@@ -91,6 +57,7 @@ public class KycService {
     }
 
     @Transactional
+    @SuppressWarnings("null")
     public KycDocument uploadDocument(Long kycProfileId, KycDocument.DocumentType documentType, MultipartFile file) {
         if (file.isEmpty()) {
             throw new RuntimeException("File is empty");
@@ -128,5 +95,89 @@ public class KycService {
         KycProfile profile = getKycProfile(userId);
         return profile.getStatus() == KycProfile.KycStatus.APPROVED &&
                 profile.getCompletionStep() == KycProfile.KycStep.APPROVED;
+    }
+
+    private void applyPersonalInfo(KycProfile profile, KycRequest request) {
+        if (request.getFullName() != null) {
+            profile.setFullName(request.getFullName());
+        }
+        if (request.getDateOfBirth() != null) {
+            profile.setDateOfBirth(request.getDateOfBirth());
+        }
+        if (request.getGender() != null) {
+            profile.setGender(parseEnum(request.getGender(), KycProfile.Gender.class, "gender"));
+        }
+        if (request.getIdType() != null) {
+            profile.setIdType(parseEnum(request.getIdType(), KycProfile.IdType.class, "ID type"));
+        }
+        if (request.getIdNumber() != null) {
+            profile.setIdNumber(request.getIdNumber());
+        }
+        if (request.getResidenceAddress() != null) {
+            profile.setResidenceAddress(request.getResidenceAddress());
+        }
+        if (request.getBusinessDetails() != null) {
+            profile.setBusinessDetails(request.getBusinessDetails());
+        }
+        if (request.getMaritalStatus() != null) {
+            profile.setMaritalStatus(
+                    parseEnum(request.getMaritalStatus(), KycProfile.MaritalStatus.class, "marital status"));
+        }
+    }
+
+    private void applyEmploymentInfo(KycProfile profile, KycRequest request) {
+        if (request.getEmploymentStatus() != null) {
+            profile.setEmploymentStatus(
+                    parseEnum(request.getEmploymentStatus(), KycProfile.EmploymentStatus.class, "employment status"));
+        }
+        if (request.getEmployerName() != null) {
+            profile.setEmployerName(request.getEmployerName());
+        }
+        if (request.getEmployerAddress() != null) {
+            profile.setEmployerAddress(request.getEmployerAddress());
+        }
+        if (request.getTinNumber() != null) {
+            profile.setTinNumber(request.getTinNumber());
+        }
+        if (request.getBusinessName() != null) {
+            profile.setBusinessName(request.getBusinessName());
+        }
+        if (request.getBusinessTinNumber() != null) {
+            profile.setBusinessTinNumber(request.getBusinessTinNumber());
+        }
+        if (request.getBusinessRegistrationNumber() != null) {
+            profile.setBusinessRegistrationNumber(request.getBusinessRegistrationNumber());
+        }
+    }
+
+    private void applyFinancialInfo(KycProfile profile, KycRequest request) {
+        if (request.getIncomeRange() != null) {
+            profile.setIncomeRange(request.getIncomeRange());
+        }
+        if (request.getIncomeSource() != null) {
+            profile.setIncomeSource(
+                    parseEnum(request.getIncomeSource(), KycProfile.IncomeSource.class, "income source"));
+        }
+        if (request.getLoanAmountRequested() != null) {
+            profile.setLoanAmountRequested(request.getLoanAmountRequested());
+        }
+        if (request.getLoanPurpose() != null) {
+            profile.setLoanPurpose(request.getLoanPurpose());
+        }
+        if (request.getRepaymentPeriodMonths() != null) {
+            profile.setRepaymentPeriodMonths(request.getRepaymentPeriodMonths());
+        }
+        if (request.getNumberOfDependents() != null) {
+            profile.setNumberOfDependents(request.getNumberOfDependents());
+        }
+    }
+
+    private <E extends Enum<E>> E parseEnum(String value, Class<E> enumType, String fieldName) {
+        try {
+            return Enum.valueOf(enumType, value.toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            log.warn("Invalid {} value: {}", fieldName, value);
+            throw new BadRequestException("Invalid " + fieldName + ": " + value);
+        }
     }
 }

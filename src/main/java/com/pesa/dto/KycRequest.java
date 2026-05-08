@@ -1,8 +1,10 @@
 package com.pesa.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import com.pesa.entity.KycProfile.KycStep;
@@ -29,9 +31,34 @@ public class KycRequest {
 
     private String businessDetails;
 
+    private String employmentStatus;
+
+    private String employerName;
+
+    private String employerAddress;
+
+    private String tinNumber;
+
+    private String businessName;
+
+    private String businessTinNumber;
+
+    private String businessRegistrationNumber;
+
+    private String incomeRange;
+
+    private String incomeSource;
+
+    private BigDecimal loanAmountRequested;
+
+    private String loanPurpose;
+
+    private Integer repaymentPeriodMonths;
+
     @NotBlank(message = "Marital status is required")
     private String maritalStatus;
 
+    @JsonAlias("numberOfDependants")
     private Integer numberOfDependents;
 
     private KycStep step;
@@ -108,6 +135,102 @@ public class KycRequest {
 
     public void setBusinessDetails(String businessDetails) {
         this.businessDetails = businessDetails;
+    }
+
+    public String getEmploymentStatus() {
+        return employmentStatus;
+    }
+
+    public void setEmploymentStatus(String employmentStatus) {
+        this.employmentStatus = employmentStatus;
+    }
+
+    public String getEmployerName() {
+        return employerName;
+    }
+
+    public void setEmployerName(String employerName) {
+        this.employerName = employerName;
+    }
+
+    public String getEmployerAddress() {
+        return employerAddress;
+    }
+
+    public void setEmployerAddress(String employerAddress) {
+        this.employerAddress = employerAddress;
+    }
+
+    public String getTinNumber() {
+        return tinNumber;
+    }
+
+    public void setTinNumber(String tinNumber) {
+        this.tinNumber = tinNumber;
+    }
+
+    public String getBusinessName() {
+        return businessName;
+    }
+
+    public void setBusinessName(String businessName) {
+        this.businessName = businessName;
+    }
+
+    public String getBusinessTinNumber() {
+        return businessTinNumber;
+    }
+
+    public void setBusinessTinNumber(String businessTinNumber) {
+        this.businessTinNumber = businessTinNumber;
+    }
+
+    public String getBusinessRegistrationNumber() {
+        return businessRegistrationNumber;
+    }
+
+    public void setBusinessRegistrationNumber(String businessRegistrationNumber) {
+        this.businessRegistrationNumber = businessRegistrationNumber;
+    }
+
+    public String getIncomeRange() {
+        return incomeRange;
+    }
+
+    public void setIncomeRange(String incomeRange) {
+        this.incomeRange = incomeRange;
+    }
+
+    public String getIncomeSource() {
+        return incomeSource;
+    }
+
+    public void setIncomeSource(String incomeSource) {
+        this.incomeSource = incomeSource;
+    }
+
+    public BigDecimal getLoanAmountRequested() {
+        return loanAmountRequested;
+    }
+
+    public void setLoanAmountRequested(BigDecimal loanAmountRequested) {
+        this.loanAmountRequested = loanAmountRequested;
+    }
+
+    public String getLoanPurpose() {
+        return loanPurpose;
+    }
+
+    public void setLoanPurpose(String loanPurpose) {
+        this.loanPurpose = loanPurpose;
+    }
+
+    public Integer getRepaymentPeriodMonths() {
+        return repaymentPeriodMonths;
+    }
+
+    public void setRepaymentPeriodMonths(Integer repaymentPeriodMonths) {
+        this.repaymentPeriodMonths = repaymentPeriodMonths;
     }
 
     public String getMaritalStatus() {

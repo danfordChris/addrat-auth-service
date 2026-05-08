@@ -4,7 +4,8 @@ import java.time.Instant;
 
 public final class ApiResponses {
 
-    private ApiResponses() {}
+    private ApiResponses() {
+    }
 
     public static <T> ApiResponse<T> success(String message, T data) {
         return new ApiResponse<>(true, message, data, Instant.now());

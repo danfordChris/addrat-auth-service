@@ -2,6 +2,7 @@ package com.pesa.entity;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -34,6 +35,32 @@ public class KycProfile {
     private String residenceAddress;
 
     private String businessDetails;
+
+    @Enumerated(EnumType.STRING)
+    private EmploymentStatus employmentStatus;
+
+    private String employerName;
+
+    private String employerAddress;
+
+    private String tinNumber;
+
+    private String businessName;
+
+    private String businessTinNumber;
+
+    private String businessRegistrationNumber;
+
+    private String incomeRange;
+
+    @Enumerated(EnumType.STRING)
+    private IncomeSource incomeSource;
+
+    private BigDecimal loanAmountRequested;
+
+    private String loanPurpose;
+
+    private Integer repaymentPeriodMonths;
 
     @Enumerated(EnumType.STRING)
     private MaritalStatus maritalStatus;
@@ -145,6 +172,102 @@ public class KycProfile {
         this.businessDetails = businessDetails;
     }
 
+    public EmploymentStatus getEmploymentStatus() {
+        return employmentStatus;
+    }
+
+    public void setEmploymentStatus(EmploymentStatus employmentStatus) {
+        this.employmentStatus = employmentStatus;
+    }
+
+    public String getEmployerName() {
+        return employerName;
+    }
+
+    public void setEmployerName(String employerName) {
+        this.employerName = employerName;
+    }
+
+    public String getEmployerAddress() {
+        return employerAddress;
+    }
+
+    public void setEmployerAddress(String employerAddress) {
+        this.employerAddress = employerAddress;
+    }
+
+    public String getTinNumber() {
+        return tinNumber;
+    }
+
+    public void setTinNumber(String tinNumber) {
+        this.tinNumber = tinNumber;
+    }
+
+    public String getBusinessName() {
+        return businessName;
+    }
+
+    public void setBusinessName(String businessName) {
+        this.businessName = businessName;
+    }
+
+    public String getBusinessTinNumber() {
+        return businessTinNumber;
+    }
+
+    public void setBusinessTinNumber(String businessTinNumber) {
+        this.businessTinNumber = businessTinNumber;
+    }
+
+    public String getBusinessRegistrationNumber() {
+        return businessRegistrationNumber;
+    }
+
+    public void setBusinessRegistrationNumber(String businessRegistrationNumber) {
+        this.businessRegistrationNumber = businessRegistrationNumber;
+    }
+
+    public String getIncomeRange() {
+        return incomeRange;
+    }
+
+    public void setIncomeRange(String incomeRange) {
+        this.incomeRange = incomeRange;
+    }
+
+    public IncomeSource getIncomeSource() {
+        return incomeSource;
+    }
+
+    public void setIncomeSource(IncomeSource incomeSource) {
+        this.incomeSource = incomeSource;
+    }
+
+    public BigDecimal getLoanAmountRequested() {
+        return loanAmountRequested;
+    }
+
+    public void setLoanAmountRequested(BigDecimal loanAmountRequested) {
+        this.loanAmountRequested = loanAmountRequested;
+    }
+
+    public String getLoanPurpose() {
+        return loanPurpose;
+    }
+
+    public void setLoanPurpose(String loanPurpose) {
+        this.loanPurpose = loanPurpose;
+    }
+
+    public Integer getRepaymentPeriodMonths() {
+        return repaymentPeriodMonths;
+    }
+
+    public void setRepaymentPeriodMonths(Integer repaymentPeriodMonths) {
+        this.repaymentPeriodMonths = repaymentPeriodMonths;
+    }
+
     public MaritalStatus getMaritalStatus() {
         return maritalStatus;
     }
@@ -235,6 +358,51 @@ public class KycProfile {
 
     public enum IdType {
         PASSPORT, NATIONAL_ID, DRIVER_LICENSE
+    }
+
+    public enum EmploymentStatus {
+        EMPLOYED("EMPLOYED", "Employed"),
+        SELF_EMPLOYED("SELF_EMPLOYED", "Self-Employed"),
+        UNEMPLOYED("UNEMPLOYED", "Unemployed");
+
+        private final String value;
+        private final String label;
+
+        EmploymentStatus(String value, String label) {
+            this.value = value;
+            this.label = label;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+    }
+
+    public enum IncomeSource {
+        SALARY("SALARY"),
+        BUSINESS("BUSINESS"),
+        AGRICULTURE("AGRICULTURE"),
+        RENTAL("RENTAL"),
+        REMITTANCE("REMITTANCE"),
+        OTHER("OTHER");
+
+        private final String value;
+
+        IncomeSource(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public String getLabel() {
+            return value.replace('_', ' ');
+        }
     }
 
     public enum KycStep {

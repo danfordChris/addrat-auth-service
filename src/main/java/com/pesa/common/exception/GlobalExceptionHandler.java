@@ -29,14 +29,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Object>> handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> errors = ex.getBindingResult().getFieldErrors().stream()
-            .collect(Collectors.toMap(
-                fieldError -> fieldError.getField(),
-                fieldError -> fieldError.getDefaultMessage() == null ? "Invalid value" : fieldError.getDefaultMessage(),
-                (first, second) -> first
-            ));
+                .collect(Collectors.toMap(
+                        fieldError -> fieldError.getField(),
+                        fieldError -> fieldError.getDefaultMessage() == null ? "Invalid value"
+                                : fieldError.getDefaultMessage(),
+                        (first, second) -> first));
 
         log.warn("Validation failed: {}", errors);
-        return ResponseEntity.badRequest().body(ApiResponses.error("Validation failed: " + errors, "Validation failed"));
+        return ResponseEntity.badRequest()
+                .body(ApiResponses.error("Validation failed: " + errors, "Validation failed"));
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
@@ -80,8 +81,8 @@ public class GlobalExceptionHandler {
         HttpStatus status = HttpStatus.valueOf(ex.getStatusCode().value());
         String reason = ex.getReason();
         String message = reason == null || reason.isBlank()
-            ? status.getReasonPhrase()
-            : reason;
+                ? status.getReasonPhrase()
+                : reason;
         log.warn("Response status exception [{}]: {}", status.value(), message);
         return ResponseEntity.status(status).body(ApiResponses.error(message));
     }
@@ -91,8 +92,8 @@ public class GlobalExceptionHandler {
         String message = "Resource not found";
         log.warn("No handler found: {} {}", ex.getHttpMethod(), ex.getRequestURL());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-            .header(HttpHeaders.CONTENT_TYPE, "application/json")
-            .body(ApiResponses.error(message, message));
+                .header(HttpHeaders.CONTENT_TYPE, "application/json")
+                .body(ApiResponses.error(message, message));
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
@@ -111,23 +112,23 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponse<Object>> handleDataIntegrity(DataIntegrityViolationException ex) {
         log.warn("Data integrity violation: {}", ex.getMostSpecificCause() != null
-            ? ex.getMostSpecificCause().getMessage()
-            : ex.getMessage());
+                ? ex.getMostSpecificCause().getMessage()
+                : ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT)
-            .body(ApiResponses.error("Data conflict"));
+                .body(ApiResponses.error("Data conflict"));
     }
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiResponse<Object>> handleRuntime(RuntimeException ex) {
         log.error("Unhandled runtime exception", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(ApiResponses.error("Internal server error", "Internal server error"));
+                .body(ApiResponses.error("Internal server error", "Internal server error"));
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleUnhandled(Exception ex) {
         log.error("Unhandled server exception", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(ApiResponses.error("Internal server error", "Internal server error"));
+                .body(ApiResponses.error("Internal server error", "Internal server error"));
     }
 }

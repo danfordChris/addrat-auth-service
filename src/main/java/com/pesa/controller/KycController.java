@@ -48,11 +48,11 @@ public class KycController {
             Authentication authentication) {
         try {
             Long userId = (Long) authentication.getDetails();
-            
+
             request.setStep(KycStep.fromInteger(step));
             KycProfile profile = kycService.saveKycStep(userId, request);
             KycResponse response = mapToKycResponse(profile);
-                return ResponseEntity.ok(ApiResponses.success("KYC step saved", response));
+            return ResponseEntity.ok(ApiResponses.success("KYC step saved", response));
         } catch (RuntimeException e) {
             log.error("Error saving KYC step {}: {}", step, e.getMessage());
             return ResponseEntity.badRequest()
@@ -61,7 +61,7 @@ public class KycController {
     }
 
     @PostMapping("/documents/{documentType}")
-            public ResponseEntity<ApiResponse<?>> uploadDocument(
+    public ResponseEntity<ApiResponse<?>> uploadDocument(
             @PathVariable String documentType,
             @RequestParam("file") MultipartFile file,
             Authentication authentication) {
@@ -121,6 +121,18 @@ public class KycController {
                 .idNumber(profile.getIdNumber())
                 .residenceAddress(profile.getResidenceAddress())
                 .businessDetails(profile.getBusinessDetails())
+                .employmentStatus(profile.getEmploymentStatus() != null ? profile.getEmploymentStatus().name() : null)
+                .employerName(profile.getEmployerName())
+                .employerAddress(profile.getEmployerAddress())
+                .tinNumber(profile.getTinNumber())
+                .businessName(profile.getBusinessName())
+                .businessTinNumber(profile.getBusinessTinNumber())
+                .businessRegistrationNumber(profile.getBusinessRegistrationNumber())
+                .incomeRange(profile.getIncomeRange())
+                .incomeSource(profile.getIncomeSource() != null ? profile.getIncomeSource().name() : null)
+                .loanAmountRequested(profile.getLoanAmountRequested())
+                .loanPurpose(profile.getLoanPurpose())
+                .repaymentPeriodMonths(profile.getRepaymentPeriodMonths())
                 .maritalStatus(profile.getMaritalStatus() != null ? profile.getMaritalStatus().name() : null)
                 .numberOfDependents(profile.getNumberOfDependents())
                 .status(profile.getStatus().name())

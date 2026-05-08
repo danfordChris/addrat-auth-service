@@ -5,6 +5,7 @@ import com.pesa.common.api.ApiResponses;
 import com.pesa.dto.KycRequest;
 import com.pesa.dto.KycResponse;
 import com.pesa.entity.KycProfile;
+import com.pesa.entity.KycProfile.KycStep;
 import com.pesa.service.KycService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -62,7 +63,7 @@ public class UserController {
         try {
 
             Long userId = (Long) authentication.getDetails();
-            request.setStep(KycProfile.KycStep.values()[step - 1]);
+            request.setStep(KycStep.fromInteger(step));
             KycProfile profile = kycService.saveKycStep(userId, request);
             KycResponse response = mapToKycResponse(profile);
 
@@ -104,6 +105,18 @@ public class UserController {
                 .idNumber(profile.getIdNumber())
                 .residenceAddress(profile.getResidenceAddress())
                 .businessDetails(profile.getBusinessDetails())
+                .employmentStatus(profile.getEmploymentStatus() != null ? profile.getEmploymentStatus().name() : null)
+                .employerName(profile.getEmployerName())
+                .employerAddress(profile.getEmployerAddress())
+                .tinNumber(profile.getTinNumber())
+                .businessName(profile.getBusinessName())
+                .businessTinNumber(profile.getBusinessTinNumber())
+                .businessRegistrationNumber(profile.getBusinessRegistrationNumber())
+                .incomeRange(profile.getIncomeRange())
+                .incomeSource(profile.getIncomeSource() != null ? profile.getIncomeSource().name() : null)
+                .loanAmountRequested(profile.getLoanAmountRequested())
+                .loanPurpose(profile.getLoanPurpose())
+                .repaymentPeriodMonths(profile.getRepaymentPeriodMonths())
                 .maritalStatus(profile.getMaritalStatus() != null ? profile.getMaritalStatus().name() : null)
                 .numberOfDependents(profile.getNumberOfDependents())
                 .status(profile.getStatus().name())

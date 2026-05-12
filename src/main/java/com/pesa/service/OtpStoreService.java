@@ -67,7 +67,11 @@ public class OtpStoreService {
     public void verifyOtp(String phoneNumber, String code) {
         String key = key(phoneNumber);
         Map<Object, Object> otpData = redisTemplate.opsForHash().entries(key);
+
+        log.debug("Verifying OTP - Phone: {}, Key: {}, Redis Data: {}", phoneNumber, key, otpData);
+
         if (otpData.isEmpty()) {
+            log.warn("No OTP found in Redis for key: {}", key);
             throw new NotFoundException("No OTP found for this phone number");
         }
 
@@ -79,8 +83,12 @@ public class OtpStoreService {
         String storedCode = String.valueOf(otpData.get(FIELD_CODE));
         int attempts = Integer.parseInt(String.valueOf(otpData.getOrDefault(FIELD_ATTEMPTS, "0")));
 
+        log.debug("OTP Comparison - Stored: '{}' (length: {}), Provided: '{}' (length: {})",
+            storedCode, storedCode.length(), code, code.length());
+
         if (!storedCode.equals(code)) {
             attempts++;
+            log.warn("OTP mismatch - attempts now: {}/{}", attempts, MAX_ATTEMPTS);
             if (attempts >= MAX_ATTEMPTS) {
                 redisTemplate.delete(key);
                 throw new UnauthorizedException("OTP attempts exceeded");
@@ -89,6 +97,7 @@ public class OtpStoreService {
             throw new BadRequestException("Invalid OTP");
         }
 
+        log.info("OTP verified successfully for phone: {}", phoneNumber);
         redisTemplate.delete(key);
     }
 

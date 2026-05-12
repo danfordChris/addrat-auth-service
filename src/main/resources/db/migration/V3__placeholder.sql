@@ -1,0 +1,2 @@
+-- Placeholder migration V3
+-- No changes needed for UUID migration at this stage

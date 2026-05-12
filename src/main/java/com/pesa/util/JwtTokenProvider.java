@@ -31,7 +31,7 @@ public class JwtTokenProvider {
 
         return Jwts.builder()
                 .setSubject(phoneNumber)
-                .claim("userId", userId)
+                .claim("userId", userId.toString())
                 .claim("phoneNumber", phoneNumber)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
@@ -46,7 +46,7 @@ public class JwtTokenProvider {
 
         return Jwts.builder()
                 .setSubject(phoneNumber)
-                .claim("userId", userId)
+                .claim("userId", userId.toString())
                 .claim("phoneNumber", phoneNumber)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
@@ -56,7 +56,8 @@ public class JwtTokenProvider {
 
     public Long getUserIdFromToken(String token) {
         Claims claims = getAllClaimsFromToken(token);
-        return claims.get("userId", Long.class);
+        String userIdStr = claims.get("userId", String.class);
+        return Long.valueOf(userIdStr);
     }
 
     public String getPhoneNumberFromToken(String token) {

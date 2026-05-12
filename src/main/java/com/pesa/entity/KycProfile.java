@@ -15,6 +15,7 @@ public class KycProfile {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(updatable = false, nullable = false)
     private Long id;
 
     @Column(name = "user_id", nullable = false, unique = true)

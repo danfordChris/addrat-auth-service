@@ -21,6 +21,7 @@ public class KycDocument {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(updatable = false, nullable = false)
     private Long id;
 
     @Column(name = "kyc_profile_id", nullable = false)
